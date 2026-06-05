@@ -1,0 +1,196 @@
+---
+title: "Nolan_Week_Ten"
+author: "Doug Nolan"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r import data}
+library(tidyverse)
+library(caret)
+url <- "https://raw.githubusercontent.com/bellevue-university/dsc520/master/assignments/version_two/10_11_week/week_10/Housing.csv"
+
+housing <- read.csv(url)
+
+head(housing)
+str(housing)
+
+```
+# data cleaning. Removing missing values for both area and price to avoid model errors. 
+# converting bedrooms, bathrooms, and storeis to numerics. 
+```{r data cleaning}
+
+housing <- housing %>%
+  rename(price = price) %>%
+  filter(!is.na(area), !is.na(price))
+
+housing$bedrooms <- as.numeric(housing$bedrooms)
+housing$bathrooms <- as.numeric(housing$bathrooms)
+housing$stories <- as.numeric(housing$stories)
+
+```
+
+```{r linear regression}
+
+model1 <- lm(price ~ area, data = housing)
+#model1 <- lm(area ~ price, data = housing)
+summary(model1)
+
+# model performance
+pred1 <- predict(model1, housing)
+rmse1 <- RMSE(pred1, housing$price)
+mse1 <- mean((pred1 - housing$price)^2)
+
+rmse1
+mse1
+# Model 1 interpretation. This is a single linear regression. We are looking at the amount of area (square footage in a house) to predict the value of a house (price). This R^2 value suggests that a substantial portion of price variability remains unexplained when only using area.
+# The adjusted R^2 is slightly lower than R^2, accounting for sample size and model complexity, but remains close in value. This indicates the model is not overfitting. 
+#  RMSE of 1,577,613 means that the model predictions are off by ~$1.58M on average. This large of RMSE indicates the model using area only is a poor predictor of accurate housing prices. 
+# overall, this is not a sufficient model for predicting housing prices. we need more variables in the model
+
+```
+
+```{r plots}
+
+res1 <- resid(model1)
+
+plot(pred1, res1,
+     main="Residuals vs Fitted (model 1)",
+     xlab = "Predicted Price", 
+     ylab= "Residuals"
+)
+     abline(h=0, col = "red")
+
+
+# qq plot
+
+qqnorm(res1)
+qqline(res1, col= "red")
+# looking at the normal QQ plot, this does follow the reference line mostly. There are some tails on each end that deviate away from the normal line. This indicates there could be possible outliers in the heavy tails. 
+
+```
+
+
+```{r model 2 - multiple linear regression}
+
+model2 <- lm(price ~ area + bedrooms + bathrooms + stories + parking, data = housing)
+summary(model2)
+# more bedrooms more people to fit in the house -> higher value
+# same story for bathrooms
+# stories - could be either way on influencing prices, throwing it in to see what happens
+# parking (assuming garage size) should be a positive influence on price 
+```
+# model 2 explanations:
+The area coefficient is 331.1 and is highly statistically significant (p < 2 × 10⁻¹⁶). This indicates that, holding all other variables constant, each additional unit of area is associated with an increase of approximately $331 in house price. This confirms that larger homes tend to be more expensive.
+
+The bedrooms coefficient is 167,809.8 with a p-value of 0.0435, making it statistically significant at the 0.05 level. This suggests that adding one bedroom increases the predicted house price by approximately $168,000, controlling for the other predictors. Bedrooms likely add value because they increase functional living space and market appeal.
+
+The bathrooms coefficient is 1,133,740.2 and is highly significant (p < 2 × 10⁻¹⁶). This means that each additional bathroom increases the predicted house price by approximately $1.13 million, holding other variables constant. Bathrooms strongly affect price because they are associated with comfort, luxury, and higher-end properties.
+
+The stories coefficient is 547,939.8 and is also highly significant (p ≈ 1.07 × 10⁻¹⁴). This indicates that each additional story adds approximately $548,000 to the predicted price, reflecting the premium placed on multi-level homes with greater usable space.
+
+The parking coefficient is 377,596.3 with a very small p-value (p ≈ 2.57 × 10⁻⁸), indicating strong statistical significance. This means that each additional parking space increases the predicted house price by approximately $378,000, likely due to the added convenience and desirability of parking availability.
+
+All predictors except the intercept are statistically significant, indicating that each contributes meaningful explanatory value to the model. Among the predictors, bathrooms and stories have the largest effects on house price, suggesting that home layout and amenities play a major role in determining value beyond simple floor area.
+
+```{r model 2 details}
+
+# model 2 performance
+
+pred2 <- predict(model2, housing)
+rmse2 <- RMSE(pred2, housing$price)
+mse2 <- mean((pred2 - housing$price)^2)
+
+rmse2
+mse2
+
+# model2 residual
+
+res2 <- resid(model2)
+# Residuals. The residual plot for Model 2 shows points that are more tightly clustered around zero compared to the simple regression model. This indicates that prediction errors are smaller and more consistent across the range of predicted house prices.
+# there's some increase in the spread of the residuals on the upper end of predicted prices. suggesting mild heteroscedasticity. Overall, the residual plot on model 2 is more accurate and stable than model 1. 
+plot(pred2, res2,
+     main="Residuals vs Fitted (model 1)",
+     xlab = "Predicted Price", 
+     ylab= "Residuals",
+     abline(h=0, col = "red")
+     
+     )
+
+qqnorm(res2)
+qqline(res2, col="red")
+# looking at the normal QQ plot, this does follow the reference line mostly. There are some tails on each end that deviate away from the normal line. This indicates there could be possible outliers in the heavy tails. 
+
+
+```
+
+```{r model comparison}
+
+data.frame(
+  Model = c("Simple", "Multiple"),
+  RMSE = c(rmse1, rmse2),
+  MSE = c(mse1, mse2),
+  R2 = c(summary(model1)$r.sqaured, summary(model2)$r.squared),
+  Adj_R2 = c(summary(model1)$adj.r.sqaured, summary(model2)$adj.r.squared)
+  
+)
+
+anova(model1, model2)
+```
+# Model Comparison
+Comparison of Model 1 and Model 2
+Model 1 (area only) had an RMSE of 1,577,613 and an MSE of 2.489 × 10¹², indicating large prediction errors.
+Model 2 reduced the RMSE to 1,237,339 and the MSE to 1.531 × 10¹², showing a substantial improvement in predictive accuracy.
+In terms of explanatory power, Model 2 achieved an R² of 0.5616 and an Adjusted R² of 0.5575, meaning that approximately 56% of the variability in house prices is explained by the model. This is a clear improvement over the simple model, which explained much less variation using area alone.
+Together, the higher R² values and the lower RMSE and MSE demonstrate that the multiple regression model (model 2) fits the data better and produces more reliable predictions.
+
+An ANOVA test was used to formally compare Model 1 and Model 2. The results show a statistically significant reduction in residual sum of squares when moving from Model 1 to Model 2, with a p-value < 0.05.
+This indicates that the additional predictors in Model 2 significantly improve the model’s fit compared to the simple regression model. 
+
+TL;DR - The second model is better 
+
+```{r prettier graphs}
+# formatting is so much easier with this library o.O
+library(scales)
+
+res1_df <- data.frame(
+  Predicted = pred1,
+  Residuals = res1
+)
+
+ggplot(res1_df, aes(x = Predicted, y = Residuals)) +
+  geom_point(alpha = 0.6) +
+  geom_hline(yintercept = 0, color = "red") +
+  scale_x_continuous(labels = dollar_format(scale = 1e-3, suffix = "K")) +
+  scale_y_continuous(labels = dollar_format(scale = 1e-3, suffix = "K")) +
+  labs(
+    title = "Residuals vs Fitted (Model 1)",
+    x = "Predicted Price ($K)",
+    y = "Residuals ($K)"
+  ) +
+  theme_minimal()
+
+
+
+res2_df <- data.frame(
+  Predicted = pred2,
+  Residuals = res2
+)
+
+ggplot(res2_df, aes(x = Predicted, y = Residuals)) +
+  geom_point(alpha = 0.6) +
+  geom_hline(yintercept = 0, color = "red") +
+  scale_x_continuous(labels = dollar_format(scale = 1e-3, suffix = "K")) +
+  scale_y_continuous(labels = dollar_format(scale = 1e-3, suffix = "K")) +
+  labs(
+    title = "Residuals vs Fitted (Model 2)",
+    x = "Predicted Price ($K)",
+    y = "Residuals ($K)"
+  ) +
+  theme_minimal()
+
+```

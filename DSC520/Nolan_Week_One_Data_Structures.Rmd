@@ -1,0 +1,294 @@
+---
+title: "Nolan_Week_One_Data_Structures"
+author: "Doug Nolan"
+date: "2025-12-01"
+output: html_document
+---
+
+# vector of strings
+fruits <- c("banana", "apple", "orange")
+
+# print fruits
+fruits
+
+# list of strings
+thislist <- list("apple", "banana", 50, 100)
+
+# print the list
+thislist
+
+# create a matrix
+thismatrix <- matrix(c(1,2,3,4,5,6), nrow = 3, ncol = 2)
+# print the matrix
+thismatrix
+
+# an array with one dimension with values from 1-24
+thisarray <- c(1:24)
+thisarray
+
+# an array with more than one dimension
+multiarray <- array(thisarray, dim = c(4,3,2))
+multiarray
+
+
+# create a data frame
+# super hard to find errors when you are missing the end double quote
+# sql errors are 99% missing commas
+# I am learning R issues are missing quotes for me :(
+Data_Frame <- data.frame(
+  Training = c("Strength", "Stamina", "Other"),
+  Pulse = c(100, 150, 120),
+  Duration = c(60, 30, 45)
+)
+# print the data frame
+Data_Frame
+
+
+# vector of numerical values
+numbers <- c(1, 2, 3)
+# print numbers
+numbers
+
+# vector with numerical decimals in sequence
+numbers1 <- 1.5:6.5
+numbers1
+
+# vector with numerical and the last element is not used
+numbers2 <- 1.5:6.3
+numbers2
+
+# vector of logical values
+log_values <- c(TRUE, FALSE, TRUE, FALSE)
+log_values
+
+length(fruits)
+
+fruits <- c("banana", "apple", "orange", "mango", "lemon")
+numbers <- c(13, 3, 5, 7, 20, 2)
+
+sort(fruits)
+sort(numbers)
+
+fruits[1]
+fruits[c(1,3)]
+fruits[c(-1)]
+
+fruits[1] <- "pear"
+fruits
+
+
+repeat_each <- rep(c(1,2,3), each = 3)
+repeat_each
+
+# very interesting to learn the key values of times v each in the repeat syntax
+repeat_times <- rep(c(1,2,3), times = 3)
+repeat_times
+
+repeat_independent <- rep(c(1,2,3), times = c(5,2,1))
+repeat_independent
+
+numbers <- 1:10
+numbers
+
+numbers <- seq(from = 0, to = 100, by = 20)
+numbers
+
+
+thislist <- list("apple", "banana", "cherry")
+thislist
+
+thislist[1]
+
+thislist[1] <- "blackcurrant"
+thislist
+
+length(thislist)
+
+thislist <- list("apple", "banana", "cherry")
+thislist
+"apple" %in% thislist
+
+
+append(thislist, "orange")
+
+append(thislist, "orange", after = 2)
+
+newlist <- thislist[-1]
+newlist
+
+
+thislist <- list("apple", "banana", "cherry", "orange", "kiwi", "melon", "mango")
+thislist
+(thislist)[2:5]
+
+
+thislist <- list("apple", "banana", "cherry")
+for (x in thislist) {
+  print(x)
+}
+
+
+list1 <- list("a", "b", "c")
+list2 <- list(1,2,3)
+list3 <- c(list1,list2)
+
+list3
+
+
+thismatrix <- matrix(c("apple", "banana", "cherry", "orange"), nrow = 2, ncol = 2)
+thismatrix
+thismatrix[1,2]
+thismatrix[2,]
+thismatrix[,2]
+
+thismatrix <- matrix(c("apple", "banana", "cherry", "orange","grape", "pineapple", "pear", "melon", "fig"), nrow = 3, ncol = 3)
+thismatrix[c(1,2),]
+thismatrix[, c(1,2)]
+
+thismatrix <- matrix(c("apple", "banana", "cherry", "orange","grape", "pineapple", "pear", "melon", "fig"), nrow = 3, ncol = 3)
+newmatrix <- cbind(thismatrix, c("strawberry", "blueberry", "raspberry"))
+# Print the new matrix
+newmatrix
+
+
+
+thismatrix <- matrix(c("apple", "banana", "cherry", "orange","grape", "pineapple", "pear", "melon", "fig"), nrow = 3, ncol = 3)
+newmatrix <- rbind(thismatrix, c("strawberry", "blueberry", "raspberry"))
+# Print the new matrix
+newmatrix
+
+thismatrix <- matrix(c("apple", "banana", "cherry", "orange", "mango", "pineapple"), nrow = 3, ncol =2)
+#Remove the first row and the first column
+thismatrix <- thismatrix[-c(1), -c(1)]
+thismatrix
+
+
+thismatrix <- matrix(c("apple", "banana", "cherry", "orange"), nrow = 2, ncol = 2)
+"apple" %in% thismatrix
+dim(thismatrix)
+length(thismatrix)
+
+thismatrix <- matrix(c("apple", "banana", "cherry", "orange"), nrow = 2, ncol = 2)
+for (rows in 1:nrow(thismatrix)) {
+  for (columns in 1:ncol(thismatrix)) {
+    print(thismatrix[rows, columns])
+  }
+}
+
+
+# Combine matrices
+Matrix1 <- matrix(c("apple", "banana", "cherry", "grape"), nrow = 2, ncol = 2)
+Matrix2 <- matrix(c("orange", "mango", "pineapple", "watermelon"), nrow = 2, ncol = 2)
+# Adding it as a rows
+Matrix_Combined <- rbind(Matrix1, Matrix2)
+Matrix_Combined
+# Adding it as a columns
+Matrix_Combined <- cbind(Matrix1, Matrix2)
+Matrix_Combined
+
+
+thisarray <- c(1:24)
+thisarray
+
+
+multiarray <- array(thisarray, dim = c(4, 3, 2))
+multiarray
+
+
+thisarray <- c(1:24)
+multiarray <- array(thisarray, dim = c(4, 3, 2))
+multiarray[2, 3, 2]
+
+
+thisarray <- c(1:24)
+# Access all the items from the first row from matrix one
+multiarray <- array(thisarray, dim = c(4, 3, 2))
+multiarray[c(1),,1]
+# Access all the items from the first column from matrix one
+multiarray <- array(thisarray, dim = c(4, 3, 2))
+multiarray[,c(1),1]
+
+
+thisarray <- c(1:24)
+multiarray <- array(thisarray, dim = c(4, 3, 2))
+2 %in% multiarray
+dim(multiarray)
+length(multiarray)
+for( x in multiarray) {
+  print(x)
+}
+
+
+
+Data_Frame
+summary(Data_Frame)
+Data_Frame[1]
+Data_Frame[["Training"]]
+Data_Frame$Training
+
+new_row_df <- rbind(Data_Frame, c("Strength", 110, 110))
+new_row_df
+
+new_col_df <- cbind(Data_Frame, Steps = c(1000, 6000, 2000))
+new_col_df
+
+df_new <- Data_Frame[-c(1), -c(1)]
+df_new
+
+dim(Data_Frame)
+ncol(Data_Frame)
+nrow(Data_Frame)
+length(Data_Frame)
+
+Data_Frame1 <- data.frame (
+  Training = c("Strength", "Stamina", "Other"),
+  Pulse = c(100, 150, 120),
+  Duration = c(60, 30, 45)
+)
+
+Data_Frame2 <- data.frame (
+  Training = c("Stamina", "Stamina", "Strength"),
+  Pulse = c(140, 150, 160),
+  Duration = c(30, 30, 20)
+)
+
+New_Data_Frame <- rbind(Data_Frame1, Data_Frame2)
+New_Data_Frame
+
+Data_Frame3 <- data.frame (
+  Training = c("Strength", "Stamina", "Other"),
+  Pulse = c(100, 150, 120),
+  Duration = c(60, 30, 45)
+)
+
+Data_Frame4 <- data.frame (
+  Steps = c(3000, 6000, 2000),
+  Calories = c(300, 400, 300)
+)
+
+New_Data_Frame1 <- cbind(Data_Frame3, Data_Frame4)
+New_Data_Frame1
+
+
+
+music_genre <- factor(c("Jazz", "Rock", "Classic", "Classic", "Pop", "Jazz", "Rock", "Jazz"))
+music_genre
+levels(music_genre)
+
+music_genre <- factor(c("Jazz", "Rock", "Classic", "Classic", "Pop", "Jazz", "Rock", "Jazz"), levels = c("Classic", "Jazz", "Pop", "Rock", "Other"))
+levels(music_genre)
+
+length(music_genre)
+music_genre[3]
+
+music_genre[3] <- "Pop"
+music_genre[3]
+
+# I dislike purposely running error codes because sometimes R gets stuck in comment outputs to the console and it takes me forever to reset it 
+music_genre[3] <- "Opera"
+music_genre[3]
+
+music_genre <- factor(c("Jazz", "Rock", "Classic", "Classic", "Pop", "Jazz", "Rock", "Jazz"), levels = c("Classic", "Jazz", "Pop", "Rock", "Opera"))
+music_genre[3] <- "Opera"
+music_genre[3]
+

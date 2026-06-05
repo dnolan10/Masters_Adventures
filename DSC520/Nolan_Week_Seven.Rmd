@@ -1,0 +1,66 @@
+---
+title: "Nolan_Week_Seven"
+author: "Doug Nolan"
+date: "2/2/2026"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+- What is your computed t-test answer?
+- What is the null hypothesis in this study?
+- What is the alternate hypothesis?
+- What probability level did you choose and why?
+- What are your degrees of freedom?
+- Is there a significant difference between the two testing conditions? Interpret your answer
+
+```{r data setup}
+
+with_tv <- c(12,7,3,11,8,5,14,7,9,10)
+without_tv <- c(8,7,4,14,6,7,12,5,5,8)
+
+data <- data.frame(with_tv, without_tv)
+
+data
+
+
+```
+
+```{r descriptive stats}
+
+mean_with <- mean(with_tv)
+mean_without <- mean(without_tv)
+
+sd_with <- sd(with_tv)
+sd_without <- sd(without_tv)
+
+var_with <- var(with_tv)
+var_without <- var(without_tv)
+
+mean_with
+mean_without
+
+sd_with
+sd_without
+
+var_with
+var_without
+
+```
+
+```{r t test}
+
+t_test <- t.test(with_tv, without_tv, paired = TRUE, alternative ="greater")
+t_test
+
+```
+- Null Hypothesis: The mean number of candy corn pieces eaten with TV is less than or equal to the mean eaten without TV
+- Alternate Hypothesis: The mean number of candy corn pieces eaten with TV is greater than the mean eaten without TV
+
+- Probability level: alpha = 0.05, standard probability level. limits the chance of a type 1 error to 5%
+- DF: 9 , one less than the number of experiment samples 
+
+- Difference in two testing conditions: No there is not a statisitcally significant difference between the two conditions. The paired t-test produced t(9) = 1.316 with a one-tailed p = 0.1104. Since p > 0.05 we fail to reject the null hypothesis.
+- Interpretation: Although children ate slightly more candy on average while watching TV than without TV, the difference is not large enough to be considered statistically significant. The observed increase could reasonably be due to random variation rather than a true effect of TV simulation. This data does not provide sufficient evidence to conclude that TV increases candy corn consumption. 

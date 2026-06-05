@@ -1,0 +1,171 @@
+---
+title: "Nolan_Week_Two"
+author: "Doug Nolan"
+date: "12-08-2025"
+output:
+  pdf_document: default
+  html_document: default
+---
+Assignment Details
+
+1.Bar graph showing product and the sum of sales for each.
+
+2.Pie chart showing sum of sales by region.
+
+3.Box plots for average sales by region and average quantities by region.
+
+4.Histogram of the count of orders by product.
+
+5.A radial plot showing total sales (for all products) by month.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(knitr)  
+library(tidyverse)
+library(Ryacas)
+library(gridExtra)
+library(ggpattern)
+library(ggplot2)
+library(scales)
+library(ggradar)
+
+```
+
+Import data from [Github](https://github.com/bellevue-university/dsc520/blob/master/assignments/version_two/10_11_week/week_02_and_03/sales_data_sample.csv)
+
+
+```{r import data}
+url <- "https://raw.githubusercontent.com/bellevue-university/dsc520/master/assignments/version_two/10_11_week/week_02_and_03/sales_data_sample.csv"
+
+data <- read.csv(url)
+## printing out data to validate it matches what is in github
+head(data, n = 10)
+dim(data) # rows and columns
+summary(data) #basic stats
+# data prep. get months organized (MDY format)
+data$OrderDate <- mdy(data$OrderDate) # convert to date
+data$Month <- month(data$OrderDate) # numeric month
+data$Month_Label <- month(data$OrderDate, label = TRUE) # abbrev labels
+```
+
+Bar graph showing product and the sum of sales for each.
+```{r bar-graph, echo=TRUE}
+# Summarize sales by product
+product_sales <- data %>%
+  group_by(Product) %>%
+  summarise(TotalSales = sum(TotalSales, na.rm = TRUE), .groups = 'drop')
+
+# Bar graph
+ggplot(product_sales, aes(x = Product, y = TotalSales, fill = Product)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(labels = dollar_format()) +
+  labs(title = "Total Sales by Product", x = "Product", y = "Total Sales ($)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+```
+
+Pie chart showing sum of sales by region.
+```{r pie-chart}
+sales_by_region <- data %>%
+  group_by(Region) %>%
+  summarise(total_sales = sum(TotalSales, na.rm = TRUE)) %>%
+  mutate(
+    pct = total_sales / sum(total_sales),
+    label = paste0(Region, "\n$", scales::comma(total_sales))
+  )
+# pie chart
+ggplot(sales_by_region, aes(x = "", y = total_sales, fill = Region)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y") +
+  geom_label(aes(label = label),
+             position = position_stack(vjust = 0.5),
+             show.legend = FALSE,
+             label.size = 0) +
+  labs(title = "Sales Distribution by Region") +
+  theme_void()
+
+
+```
+
+
+Box Plots - Total Sales and quantity by Region
+```{r box plot}
+#box plot for total sales by region
+p1 <- ggplot(data, aes(x = Region, y = TotalSales, fill = Region)) +
+  geom_boxplot() +
+  scale_y_continuous(labels = dollar_format()) +
+  labs(title = "Distribution of Total Sales by Region", x = "Region", y = "Total Sales ($)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+# box plot for quantity by region
+p2 <- ggplot(data, aes(x = Region, y = Quantity, fill = Region)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Total Sales by Region", x = "Region", y = "Quantity") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+grid.arrange(p1, p2, ncol = 2)
+```
+
+Histogram of the count of orders by product
+```{r histogram}
+# count orders by product
+product_count <- data %>%
+  group_by(Product) %>%
+  summarise(Order_Count = n(), .groups = 'drop')
+
+# bar plot / histogram
+ggplot(product_count, aes(x = Product, y = Order_Count, fill = Product)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Orders by Product", x = "Prodcut", y = "Order Count") + 
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+
+
+
+
+
+A radial plot showing total sales (for all products) by month
+```{r radial plot2}
+# Prepare monthly data
+
+monthly_sales <- data %>%
+mutate(Month = month(OrderDate, label = TRUE)) %>%
+group_by(Month) %>%
+summarise(total_sales = sum(TotalSales, na.rm = TRUE))
+
+# Normalize for radar chart
+
+radar_data <- monthly_sales %>%
+mutate(total_sales_scaled = total_sales / max(total_sales)) %>%
+select(Month, total_sales_scaled)
+
+# Convert to wide format for ggradar
+
+radar_wide <- radar_data %>%
+pivot_wider(names_from = Month, values_from = total_sales_scaled)
+
+# ggradar requires a data frame with rownames
+
+radar_df <- as.data.frame(radar_wide)
+row.names(radar_df) <- "Monthly Sales"
+
+# Create radar chart
+
+ggradar(radar_df,
+values.radar = c("0","0.5","1"),
+grid.min = 0,
+grid.mid = 0.5,
+grid.max = 1,
+legend.position = "none") +
+ggtitle("Radial Plot of Total Monthly Sales")
+
+
+```
+
+

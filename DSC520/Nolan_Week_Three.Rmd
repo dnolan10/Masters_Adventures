@@ -1,0 +1,292 @@
+---
+title: "Nolan Week Three - Statistics"
+author: "Doug Nolan"
+date: "12-15-2025"
+output: 
+  html_document:
+  theme: "solar"
+  bg: "#121212"
+  fg: "#E4E4E4"
+  base_font:
+  google: "Prompt"
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(knitr)  
+library(tidyverse)
+library(Ryacas)
+library(gridExtra)
+library(ggpattern)
+library(ggplot2)
+library(scales)
+library(ggradar)
+library(e1071)
+```
+
+
+Import data from [Github](https://github.com/bellevue-university/dsc520/blob/master/assignments/version_two/10_11_week/week_02_and_03/sales_data_sample.csv)
+
+
+```{r import data}
+url <- "https://raw.githubusercontent.com/bellevue-university/dsc520/master/assignments/version_two/10_11_week/week_02_and_03/sales_data_sample.csv"
+
+data <- read.csv(url)
+## printing out data to validate it matches what is in github
+head(data, n = 10)
+
+
+```
+
+```{r stats for quantity, histogram}
+# distribution, aka histogram of the quantity column from the data. Looking at bins of 5, 10, 20, and then finally 7. I am seeing the same pattern. the right side of the data has lower frequency. My theory is that this data is going to show right skweness later on. 
+# Quantity_df <- data.frame(Quantity)
+Quantity_df <- data %>%
+  select(Quantity) %>%
+  mutate(Quantity = as.numeric(Quantity))
+
+ggplot(Quantity_df, aes(x = Quantity)) +
+  geom_histogram(bins = 7, fill = "steelblue", color = "black") +
+  labs(title = "Distribution of Quantity", x = "Quantity", y = "Frequency")
+
+```
+
+```{r quantity central tendency}
+
+# central tendency
+mean_Quantity <- mean(Quantity_df$Quantity)
+median_Quantity <- as.numeric(median(Quantity_df$Quantity))
+mode_Quantity <- as.numeric(names(sort(table(Quantity_df$Quantity), decreasing = TRUE)[1]))
+
+# show values
+mean_Quantity
+median_Quantity
+mode_Quantity
+
+# show again but with viz's
+# box plot with the average red dot just above the median line. 
+# mean being a higher value than the median supports the right skew theory
+# median is the thick black line in the middle here
+
+ggplot(Quantity_df, aes(x = "", y = Quantity)) +
+  geom_boxplot(fill = "lightgray") +
+  stat_summary(fun = mean, geom = "point", color = "red", size = 3) +
+  labs(title = "Quantity with mean highlighted")
+
+```
+
+```{r quantity dispersion}
+
+range_quantity <- range(Quantity_df$Quantity)
+var_quantity <- var(Quantity_df$Quantity)
+sd_quantity <- sd(Quantity_df$Quantity)
+
+#show numeric values of dispersion
+# range varies from 1 to 19. meaning the amount of volume someone ordered was as few as 1 units and as many as 19
+# variance is 32 & standard deviation is 5. given the range the variance and standard deviations are rather high in this example
+range_quantity
+var_quantity
+sd_quantity
+
+```
+
+```{r quantity IQR}
+
+iqr_quantity <- IQR(Quantity_df$Quantity)
+quantiles_quantity <- quantile(Quantity_df$Quantity)
+
+# show numeric values
+iqr_quantity
+quantiles_quantity
+
+# show visuals
+ggplot(Quantity_df, aes(y = Quantity)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(title = "Boxplot showing Interquartile Range")
+
+
+```
+
+
+```{r quantity statistical moments}
+
+skewness_quantity <- skewness(Quantity_df$Quantity)
+kurtosis_quantity <- kurtosis(Quantity_df$Quantity)
+
+# show numeric values
+skewness_quantity
+kurtosis_quantity
+
+# skew value is positive, validating the thoery of a right-skewed distribution
+
+```
+
+
+
+Unit Price
+
+```{r stats for price, histogram}
+# distribution, aka histogram of the unit price column from the data. This graph is showing the prices cluster in the mid to low range, but there are a handful of outliers on the right side of the graph above $100. This graph shows the data for prices is right skewed
+Price_df <- data %>%
+  select(UnitPrice) %>%
+  mutate(UnitPrice = as.numeric(UnitPrice))
+
+ggplot(Price_df, aes(x = UnitPrice)) +
+  geom_histogram(bins = 25, fill = "steelblue", color = "black") +
+  labs(title = "Distribution of Unit Price", x = "UnitPrice", y = "Frequency")
+
+
+```
+
+```{r Price central tendency}
+# central tendency
+mean_Price <- mean(Price_df$UnitPrice)
+median_Price <- as.numeric(median(Price_df$UnitPrice))
+mode_Price <- as.numeric(names(sort(table(Price_df$UnitPrice), decreasing = TRUE)[1]))
+
+# show values
+mean_Price
+median_Price
+mode_Price
+
+# show again but with viz's
+# box plot with the average red dot just above the median line. 
+# mean and median are fairly close to each other. This indicates there are just a few outliers on the top end to push the mean above the median. 
+
+ggplot(Price_df, aes(x = "", y = UnitPrice)) +
+  geom_boxplot(fill = "lightgray") +
+  stat_summary(fun = mean, geom = "point", color = "red", size = 3) +
+  labs(title = "Price with mean highlighted")
+
+```
+
+```{r Price dispersion}
+
+range_price <- range(Price_df$UnitPrice)
+var_price <- var(Price_df$UnitPrice)
+sd_price <- sd(Price_df$UnitPrice)
+
+#show numeric values of dispersion
+# range varies from 0.98 to 144.08
+# the sd of $28 suggest that 68% of prices are between $24 and $80
+# there is a very high variance value. This suggests the mean is less representative of the typical observation for prices, and the median would be a better alternative. 
+range_price
+var_price
+sd_price
+
+```
+
+```{r Price IQR}
+
+iqr_price<- IQR(Price_df$UnitPrice)
+quantiles_price <- quantile(Price_df$UnitPrice)
+
+# show numeric values
+iqr_price
+quantiles_price
+
+# show visuals
+ggplot(Price_df, aes(y = UnitPrice)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(title = "Boxplot showing Interquartile Range")
+# 25% of prices are below $26, 50% are below $50.97 , 75% are below $77 and all are below $144
+```
+
+
+```{r Price statistical moments}
+
+skewness_price <- skewness(Price_df$UnitPrice)
+kurtosis_price <- kurtosis(Price_df$UnitPrice)
+
+# show numeric values
+skewness_price
+kurtosis_price
+
+
+```
+
+
+
+Total Sales
+
+```{r stats for Sales, histogram}
+# distribution of sales is strongly right skewed. Most of the sales are in lower amounts but there are a small number of sales at the higher amount that extend our graph tail way out to the right 
+Sales_df <- data %>%
+  select(TotalSales) %>%
+  mutate(TotalSales = as.numeric(TotalSales))
+
+ggplot(Sales_df, aes(x = TotalSales)) +
+  geom_histogram(bins = 25, fill = "steelblue", color = "black") +
+  labs(title = "Distribution of Total Sales", x = "TotalSales", y = "Frequency")
+
+
+```
+
+```{r Sales central tendency}
+# central tendency
+mean_Sales <- mean(Sales_df$TotalSales)
+median_Sales <- as.numeric(median(Sales_df$TotalSales))
+mode_Sales <- as.numeric(names(sort(table(Sales_df$TotalSales), decreasing = TRUE)[1]))
+
+# show values
+mean_Sales
+median_Sales
+mode_Sales
+
+# show again but with viz's
+# the mean of sales is much higher than the median. This tells me there are large sales transactions that are skewing the mean to be higher. The median gives a more accurate representation of the typical sale value, since it's not impacted by the large outliers
+
+ggplot(Sales_df, aes(x = "", y = TotalSales)) +
+  geom_boxplot(fill = "lightgray") +
+  stat_summary(fun = mean, geom = "point", color = "red", size = 3) +
+  labs(title = "Total Sales with mean highlighted")
+
+```
+
+```{r Sales dispersion}
+
+range_sales <- range(Sales_df$TotalSales)
+var_sales <- var(Sales_df$TotalSales)
+sd_sales <- sd(Sales_df$TotalSales)
+
+# show numeric values of dispersion
+# range varies from 8.5 to 1895
+# The range is large. The huge variance further confirms that the sales values are largely spread around the mean. The standard deviation is also a large value to reflect a wide range in this data.
+# the mean is roughly 400 and the sd is roughly 400, given a range from 8-1895 it makes sense that 68% of the values would be between 0 and 800. We will look at the IQR boxplot to see if it validates this. If so, there would be a ton of outliers on the upper limit side.
+range_sales
+var_sales
+sd_sales
+
+```
+
+```{r Sales IQR}
+
+iqr_sales <- IQR(Sales_df$TotalSales)
+quantiles_sales <- quantile(Sales_df$TotalSales)
+
+# show numeric values
+iqr_sales
+quantiles_sales
+
+# show visuals
+ggplot(Sales_df, aes(y = TotalSales)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(title = "Boxplot showing Interquartile Range")
+# this IQR shows that the middle 50% of sales is in a small band, compared to the full range. This highlights the upper end outliers of Sales
+# 25% of sales are below $99, 50% are below $271 , 75% are below $602 and all are below $1895
+
+```
+
+
+```{r Sales statistical moments}
+
+skewness_sales <- skewness(Sales_df$TotalSales)
+kurtosis_sales <- kurtosis(Sales_df$TotalSales)
+
+# show numeric values
+skewness_sales
+kurtosis_sales
+
+```

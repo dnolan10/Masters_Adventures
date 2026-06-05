@@ -1,0 +1,129 @@
+---
+title: "Nolan_Week_Six_Pt_One"
+author: "Doug Nolan"
+date: "`1-27-2026`"
+output: html_document
+---
+
+```{r intro: Part 1 - Rolling a fair die}
+# Expected value of a single die 
+# E(X) = frac{1+2+3+4+5+6}{6} = 3.5
+# the issue is the expected value is a decimal and we will never roll that exact value at any time. The expected value is the average of all the rolls and that running average will eventually converge to 3.5, but the die will never show that
+```
+- simulation of die rolls
+```{r die rolls}
+set.seed(456)
+n <- 10000
+rolls <- sample(1:6, n, replace = TRUE)
+
+running_mean <- cumsum(rolls) / seq_along(rolls)
+
+plot(running_mean, type = "l",
+     main = "Running Average of Die Rolls", 
+     xlab = "Number of Rolls", 
+     ylab = "Average"
+       )
+abline(h=3.5, col = "red", lwd = 2)
+```
+
+```{r drawing balls from box}
+# box has 30 red balls and 15 green. 
+# P(Red) = 30 / 45 = 2/3
+
+set.seed(234)
+
+balls <- c(rep("Red", 30), rep("Green", 15))
+
+n <- 10000
+draws <- sample(balls, n, replace = TRUE)
+
+red_indicator <- draws == "Red"
+running_prop <- cumsum(red_indicator) / seq_along(red_indicator)
+
+plot(running_prop, type = "l",
+     main = "Running Proportion of Red Balls",
+     xlab = "Number of Draws",
+     ylab = "Proportion of Red"
+     )
+abline(h=2/3, col = "red", lwd = 2)
+
+```
+
+
+```{r exercise from textbook}
+# ADD COMMENTS FOR EACH LINE TO EXPLAIN WHAT'S GOING ON
+#-------- Exercise 1 ---------#
+#-----------------------------#
+library(tidyr) 
+library(ggplot2) 
+library(cowplot)
+
+# create sequence of population variances to test
+# set tau levels - 40 different steps varying from .1 to 10
+tau2levels = seq(.1,10,length.out=40)
+
+# simulation parameters
+samplesize = 200 # each sample has 200 data points randomly drawn 
+numsamples =  20 # repeat procedure 20 times
+# number of different variance levels
+l <- length(tau2levels)
+# matrices to store results
+# rows = repeated samples, columns = different tau^2 levels
+resultm = matrix(0,nrow=numsamples,ncol=l)
+resultv = matrix(0,nrow=numsamples,ncol=l)
+
+# Loop over each population variance level
+for (ni in seq(l)) { 
+
+  # repeat for multiple samples at that variance level
+  for (sampi in seq(numsamples)) { 
+
+    # generate one random sample from a normal distribution
+    data = rnorm(n=samplesize,0,sqrt(tau2levels[ni]))
+
+    # store sample mean and variance for this sample and variance level
+    resultm[sampi,ni] = mean(data)
+    resultv[sampi,ni] = var(data)
+  }
+}
+
+
+
+# convert matrix of sample menas into long format data frame for ggplot
+# rows become individual observations. tau2 levels become grouping variable
+lresultm <- gather(data.frame(t(resultm),tau2levels),tau,resultm,-tau2levels) # long data frame
+# plot A: sample means as a function of population variance
+ggp1 <- ggplot(lresultm) + aes(x=tau2levels,y=resultm) +
+  geom_point(fill=rgb(.6,.6,.6),col='black',shape=22,size=4,stroke=.8) +
+  # plot the mean of the sample means at each tau^2 level
+  stat_summary(fun='mean',geom='point',shape=23, size=4,stroke=.8, col='black',fill='white') + 
+  labs(x=expression(tau^2), y='Value', title=expression(paste(bold("A)"), " Sample averages"))) +
+  scale_x_continuous(limits=c(-0.2,10.5),expand = expansion(c(0,0)) ) +
+  theme(axis.title = element_text(size=14), axis.text = element_text(size=14), plot.title=element_text(vjust= -1))
+ 
+  
+
+# plot B: Compare two variance quantities
+# 1 - average of sample variances
+# 2 - variance of sample means
+ggp2 <- ggplot() + 
+  # average sample variances at each tau^2 level
+  geom_point(aes(x=tau2levels,y=colMeans(resultv), shape= 'Average variances'), 
+                              fill= rgb(.7,.7,.7), color='black', size=3, stroke=.8) +
+  # variance of sample means at each tau^2 level
+  geom_point(aes(x=tau2levels,y=apply(resultm,2,var), shape= 'Variance of averages'),      
+             fill= rgb(.8,.8,.8), color='black', size=3,stroke=.8) +      
+  labs(x=expression(tau^2), y='Value', title=expression(paste(bold("B)"), " Sample variances"))) +
+  scale_shape_manual(values=c(24,21))  + 
+  scale_x_continuous(limits=c(-0.2,10.5),expand = expansion(c(0,0)) ) +
+  theme(axis.text = element_text(size=14), legend.position = c(.25,0.8), legend.margin = margin(c(0,5,6,5)),
+        legend.title=element_blank(), legend.background = element_blank(), 
+        legend.box.background = element_rect(colour = "black"), legend.text=element_text(size=14),
+        axis.title=element_text(size=14), plot.title=element_text(vjust= -1))
+
+# combine two plots vertically into one figure
+plot_grid(ggp1,ggp2,ncol=1)
+# save as png
+ggsave('sample_ex1.png',  device='png',width = 7, height = 7)
+
+```

@@ -1,0 +1,101 @@
+---
+title: "Nolan_Week_Five"
+author: "Doug Nolan"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# In Markdown at the start of your .r file, describe probability theory.
+# How many different license plates can be made from six digits?
+# When flipping a coin, what is the probability you will get heads three times in a row? Create a visualization of this. There are code examples in the book’s GitHub.
+# Given a standard 52 card deck of cards, what is the probability you’ll randomly draw an Ace of Spades and then Two of Hearts in a row?
+# # Given two fair dice are rolled where each of the 36 possible outcomes is equally likely. Knowing that the first die shows a 6, what is the probability that the sum of the two dice equals 9?
+# You want to invest, and you have a 30% chance of making $70,000 and 70% chance of losing $ 40,000. Should you invest? Explain.
+# A $2 lottery ticket offers a grand prize of $200,000; 5 losers are winners prizes each pay $1000; 15 third-place prizes each pay $300; and 25 fourth-place prizes each pay $10. Find the expected value of entering this contest if 5 million tickets are sold.
+```
+
+
+```{r probability Theory}
+# Probability theory is a branch that deals with uncertaintiy and randomness. It provides a framework for quantifying how likely events are to occur by giving them values between 0 and 1. 0 represents an impossible event and 1 represents a certain event. Probability theory defines a sample space (all possible outcomes) and events (subsets of outcomes). This allows us to formally reason about risk, randomness, and expected outcomes. 
+```
+
+```{r license plate combos}
+# licenes plates can contain letters a-z, 26 possibilities, and numbers 0-9, 10 possibilities
+lp = 36^6
+lp
+```
+
+```{r coin flips }
+library(ggplot2)
+# P(H H H) = (0.5)^3 = 0.125
+set.seed(123)
+# simulate coin flips
+n <- 1000
+flips <- replicate(3, sample(c("H", "T"), n, replace = TRUE))
+
+# check for three heads
+three_heads <- apply(flips, 1, function(x) all(x == "H"))
+
+# Proportion
+mean(three_heads)
+
+plot_data <- data.frame(Result = factor(three_heads, levels = c(TRUE, FALSE)))
+
+ggplot(plot_data, aes(x = Result)) +
+  geom_bar() +
+  labs(
+    title = "Simulation of Three Heads in a Row",
+    x = "Outcome (TRUE = Three Heads)",
+    y = "Count"
+  ) +
+  theme_minimal()
+```
+
+```{r deck of cards - draw two specific cards back to back}
+# 52 cards in a deck. have to draw the first being correct. now left with 51, have to draw the next while being correct
+# P = 1/52 * 1/51 = 1/2652
+P_ace_spades = 1/52
+P_two_hearts = 1/51
+P = P_ace_spades * P_two_hearts
+P
+
+```
+
+```{r probability with Dice}
+# two dice rolled, D1 shows 6. what's P of sum = 9
+
+# P(D1+ D2 = 9 | D1 = 6) = P(D2 = 3 | D1 = 6) = P(D2 = 3) = 1/6 
+
+
+```
+
+```{r investment with Expected Values}
+Outcome1 = .30 * 70000
+Outcome2 = .7 * -40000
+
+EV = Outcome1 + Outcome2
+EV
+# since the expected value is to lose $7,000, we should not invest
+```
+
+
+```{r Lottery Expected Value}
+# Details: Ticket costs $2
+# Grand prize (1 winner) = $200K
+# 5 prizes at $1,000
+# 15 prizes at $300
+# 25 prizes at $10
+# Tickets sold: 5,000,000
+num_tickets <- 5000000
+p_grand <- 1/num_tickets
+p_1000 <- 5/num_tickets
+p_300 <- 15/num_tickets
+p_10 <- 25/num_tickets
+
+EV <- (p_grand * 200000) + (p_1000 * 1000) + (p_300 * 300) + (p_10 * 10) - 2
+
+EV
+
+```

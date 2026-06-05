@@ -1,0 +1,115 @@
+---
+title: "Nolan_Week_Eight"
+author: "Doug Nolan"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r import data}
+url <- "https://raw.githubusercontent.com/bellevue-university/dsc520/master/assignments/version_two/10_11_week/week_08_and_09/travel_insurance.csv"
+
+data <- read.csv(url)
+## printing out data to validate it matches what is in github
+head(data, n = 10)
+str(data)
+
+```
+
+```{r find numeric columns}
+num_data <- data[sapply(data, is.numeric)]
+str(num_data)
+
+```
+
+```{r correlation}
+var1 <- num_data[[1]]
+var2 <- num_data[[3]]
+
+cor(var1, var2, use = "complete.obs")
+
+pearson <- cor(var1, var2, use = "complete.obs", method = "pearson")
+spearman <- cor(var1, var2, use = "complete.obs", method = "spearman")
+kendall <- cor(var1, var2, use = "complete.obs", method = "kendall")
+
+pearson
+spearman
+kendall
+```
+# Pearson - Linear
+# Spearman - Monotonic
+# Kendall - Rank Agreement
+```{r correlation matrix}
+cor_matrix <- cor(num_data, use = "complete.obs")
+cor_matrix
+
+```
+
+```{r covariance}
+cov(var1, var2, use = "complete.obs")
+```
+
+```{r cosine & plot}
+
+cosine_similarity <- sum(var1 * var2, na.rm = TRUE) /
+  (sqrt(sum(var1^2, na.rm = TRUE)) * sqrt(sum(var2^2, na.rm = TRUE)))
+
+cosine_similarity
+
+
+plot(var1, var2,
+     main = "Scatterplot of Duration & Commision",
+     xlab = colnames(num_data)[1],
+     ylab = colnames(num_data)[3],
+     pch = 19, col = "blue"
+     )
+```
+
+```{r confidence intervals}
+
+ci_table <- data.frame(
+  Variable = character(),
+  Mean = numeric(),
+  Lower = numeric(),
+  Upper = numeric()
+)
+
+for (v in colnames(num_data)) {
+  x <- num_data[[v]]
+  test <- t.test(x)
+  
+  ci_table <- rbind(ci_table, data.frame(
+    Variable = v,
+    Mean = mean(x, na.rm = TRUE),
+    Lower = test$conf.int[1],
+    Upper = test$conf.int[2]
+  ))
+}
+
+ci_table
+```
+
+```{r t tests}
+
+t_scores <- sapply(num_data, function(x) {
+  m <- mean(x, na.rm = TRUE)
+  s <- sd(x, na.rm = TRUE)
+  n <- sum(!is.na(x))
+  m / (s / sqrt(n))
+})
+t_scores
+```
+# Confidence Intervals - This table illustrates the mean and the possible range of the population. narrow intervals of upper and lower means higher levels of precision. If the intervals are much further spread apar this implies more uncertainty about the mean. 
+# t scores - this measure how many standard errors the mean is from zero. Larger absolute values indicate stronger evidence that the mean differs from zero. 
+
+
+
+
+
+
+
+
+

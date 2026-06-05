@@ -1,0 +1,85 @@
+---
+title: "Nolan_Week_Nine"
+author: "Doug Nolan"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r import data}
+library(tidyverse)
+url <- "https://raw.githubusercontent.com/bellevue-university/dsc520/master/assignments/version_two/10_11_week/week_08_and_09/travel_insurance.csv"
+
+data <- read.csv(url)
+## printing out data to validate it matches what is in github
+head(data, n = 10)
+str(data)
+
+```
+
+```{r data preparation}
+
+# Filter any invalid data (negatives)
+data <- data %>%
+  filter(Duration >0)
+
+#Factors
+data$Claim <- as.factor(data$Claim)
+data$Agency.Type <- as.factor(data$Agency.Type)
+
+```
+
+
+
+```{r one way ANOVA}
+#fit model
+one_way_model <- lm(Duration ~ Claim, data = data)
+# ANOVA Table
+anova_one_way <- anova(one_way_model)
+print(anova_one_way)
+
+summary(one_way_model)
+
+```
+
+```{r two way}
+
+#model
+two_way_model <- lm(Duration ~ Claim * Agency.Type, data = data)
+
+# ANOVA Table
+anova_two_way <- anova(two_way_model)
+print(anova_two_way)
+
+summary(two_way_model)
+
+```
+
+```{r compare wih AIC}
+
+# AIC for one way
+aic_one <- AIC(one_way_model)
+print(paste("AIC for One-Way Model:", aic_one))
+
+
+# AIC for two way
+aic_two <- AIC(two_way_model)
+print(paste("AIC for Two-Way Model:", aic_two))
+
+# pick the better one
+if (aic_one < aic_two) {
+  print("One-Way ANOVA Model is better based on AIC.")
+} else if (aic_two < aic_one) {
+  print("Two-Way ANOVA Model is better based on AIC")
+} else{
+  print("Both models have the same AIC")
+}
+
+
+```
+# Since two way model was selected, that tells us that looking at Claim AND agency type is better than using Claim alone. 
+```
+
